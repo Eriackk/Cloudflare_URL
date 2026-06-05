@@ -153,19 +153,22 @@
     <span>checked <b id="checkedAt">—</b></span>
   </div>
 
-  <div class="footer">auto-refresh every 30s · <span class="blink">_</span></div>
+  <div class="footer">auto-refresh every 60s · <span class="blink">_</span></div>
 </div>
 
 <script>
 /* ════════════════════════════════════════════════
    配置：把下面的 GH_USER / GH_REPO 改成你的仓库
+   （必须和数据机 main.py 里的 COINSHOT_GH_REPO 完全一致）
    url.json 由数据机自动写入这个仓库根目录
    ════════════════════════════════════════════════ */
 const GH_USER = "Eriackk";
 const GH_REPO = "coinshot-tunnel";
 const GH_BRANCH = "main";
-// 从 raw.githubusercontent 读 url.json（带 CORS，可浏览器直读）
-const URL_JSON = `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/${GH_BRANCH}/url.json`;
+// 主源：GitHub API（即时内容，不像 raw 那样缓存 5 分钟）
+const API_URL = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/url.json?ref=${GH_BRANCH}`;
+// 备用源：raw（API 限流或失败时退回）
+const RAW_URL = `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/${GH_BRANCH}/url.json`;
 
 let currentUrl = "";
 
@@ -182,28 +185,50 @@ function fmtAgo(iso){
   return Math.floor(h/24)+"d ago";
 }
 
-// 1) 读取 url.json，拿到当前数据机 URL
+// 1) 读取 url.json：先试 GitHub API（即时），失败再试 raw（备用）
 async function fetchUrl(){
+  let obj = null, err = "";
+  // ── 主源：GitHub API ──
   try{
-    const r = await fetch(URL_JSON + "?t=" + Date.now(), {cache:"no-store"});
-    if(!r.ok) throw new Error("HTTP "+r.status);
-    const j = await r.json();
-    currentUrl = (j.url||"").replace(/\/$/,"");
+    const r = await fetch(API_URL, {
+      headers: {"Accept": "application/vnd.github.raw+json"},
+      cache: "no-store"
+    });
+    if(r.ok){
+      // 用了 raw media type，直接拿到文件内容
+      obj = await r.json();
+    }else{
+      err = "API HTTP " + r.status;
+    }
+  }catch(e){ err = "API " + e.message; }
+
+  // ── 备用源：raw（API 失败/限流时）──
+  if(!obj){
+    try{
+      const r2 = await fetch(RAW_URL + "?t=" + Date.now(), {cache:"no-store"});
+      if(r2.ok){ obj = await r2.json(); err = ""; }
+      else { err = err + " · raw HTTP " + r2.status; }
+    }catch(e){ err = err + " · raw " + e.message; }
+  }
+
+  if(obj){
+    currentUrl = (obj.url||"").replace(/\/$/,"");
     if(currentUrl){
       $("urlText").textContent = currentUrl;
       $("urlText").classList.remove("placeholder");
       $("openBtn").href = currentUrl + "/status";
+      $("updatedAt").textContent = fmtAgo(obj.updated_at);
+      checkAlive();
     }else{
-      $("urlText").textContent = "no url published yet";
+      $("urlText").textContent = "url.json 里没有 url 字段";
       $("urlText").classList.add("placeholder");
+      setStatus("dead", "bad url.json");
     }
-    $("updatedAt").textContent = fmtAgo(j.updated_at);
-    // 拿到 URL 后立即探活
-    if(currentUrl) checkAlive();
-  }catch(e){
-    $("urlText").textContent = "url.json 还没发布 — 检查数据机的 GitHub 环境变量";
+  }else{
+    // 两个源都失败 → 显示具体错误码，方便排查
+    $("urlText").textContent = "读不到 url.json（" + err + "）";
     $("urlText").classList.add("placeholder");
-    setStatus("dead", "waiting for data machine to publish");
+    setStatus("dead", "url.json not found · 检查仓库名/分支");
   }
 }
 
@@ -252,9 +277,9 @@ function copyUrl(){
   });
 }
 
-// 初次加载 + 每 30s 刷新
+// 初次加载 + 每 60s 刷新（API 未登录限 60 次/小时，60s 间隔最安全）
 fetchUrl();
-setInterval(fetchUrl, 30000);
+setInterval(fetchUrl, 60000);
 // 探活比 URL 刷新更频繁一点（每 15s）
 setInterval(checkAlive, 15000);
 
