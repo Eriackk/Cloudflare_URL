@@ -4,254 +4,186 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CoinShot · Data Links</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#04070a; --green:#9be34a; --green-bright:#c6ff6a; --green-dim:#3f5a2a;
-    --panel:rgba(8,14,9,0.72); --border:rgba(120,200,80,0.18); --border-hi:rgba(150,230,90,0.5);
-    --txt:#bfe39a; --dim:#5f7a48; --faint:#3c4f2c; --red:#ff6b6b; --amber:#ffc24b;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{height:100%;}
-  body{
-    background:var(--bg); color:var(--txt);
-    font-family:'IBM Plex Mono',monospace; min-height:100vh;
-    display:flex;align-items:center;justify-content:center;
-    padding:40px 22px; position:relative; overflow:hidden;
-    perspective:1400px;
-  }
-  #matrix{position:fixed;inset:0;z-index:0;opacity:0.42;}
-  body::after{
-    content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
-    background:radial-gradient(ellipse at 50% 45%, transparent 30%, rgba(4,7,10,0.82) 85%);
-  }
-  .stage{position:relative;z-index:2;width:100%;max-width:760px;transform-style:preserve-3d;
-    transition:transform .12s ease-out;will-change:transform;}
+:root{
+  --bg:#04070a; --green:#9be34a; --green-bright:#c6ff6a; --green-dim:#3f5a2a;
+  --panel:rgba(8,18,9,0.82); --border:rgba(120,200,80,0.22); --border-hi:rgba(150,230,90,0.6);
+  --txt:#bfe39a; --dim:#5f7a48; --faint:#3c4f2c; --red:#ff6b6b; --amber:#ffc24b;
+}
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'IBM Plex Mono',monospace;color:var(--txt);}
 
-  header{text-align:center;margin-bottom:26px;transform:translateZ(40px);}
-  .title{font-family:'Major Mono Display',monospace;font-size:clamp(30px,6vw,50px);
-    color:var(--green-bright);letter-spacing:0.06em;text-shadow:0 0 22px rgba(155,227,74,0.5);}
-  .subtitle{margin-top:10px;font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:var(--dim);}
-  .subtitle b{color:var(--green);}
+#matrix{position:fixed;inset:0;z-index:0;}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;transform-style:preserve-3d;}
+/* 标题 */
+#header{
+  position:fixed;top:28px;left:50%;transform:translateX(-50%);
+  z-index:10;text-align:center;pointer-events:none;
+}
+.title{
+  font-family:'Major Mono Display',monospace;
+  font-size:clamp(24px,4vw,42px);
+  color:var(--green-bright);
+  letter-spacing:0.08em;
+  text-shadow:0 0 30px rgba(198,255,106,0.7), 0 0 60px rgba(155,227,74,0.3);
+}
+.subtitle{margin-top:6px;font-size:10px;letter-spacing:0.45em;text-transform:uppercase;color:var(--dim);}
+.subtitle b{color:var(--green);}
 
-  .card{
-    position:relative;border-radius:6px;padding:20px 20px 17px;
-    background:var(--panel);border:1px solid var(--border);
-    backdrop-filter:blur(6px);
-    box-shadow:0 18px 46px rgba(0,0,0,0.55), inset 0 0 50px rgba(120,200,80,0.03);
-    transform:translateZ(20px);transition:border-color .25s, box-shadow .25s;
-    animation:rise .5s cubic-bezier(.2,.8,.2,1) both;
-  }
-  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;
-    background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:.6;}
-  .card:hover{border-color:var(--border-hi);box-shadow:0 22px 54px rgba(0,0,0,0.6),0 0 26px rgba(155,227,74,0.16);}
-  @keyframes rise{from{opacity:0;transform:translateZ(20px) translateY(10px);}to{opacity:1;transform:translateZ(20px) translateY(0);}}
+/* 右下角 Gist ID */
+#gist-label{
+  position:fixed;bottom:14px;right:18px;
+  font-size:9px;letter-spacing:0.15em;color:var(--faint);
+  z-index:10;pointer-events:none;
+}
 
-  .c-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px;}
-  .c-name{font-family:'Major Mono Display',monospace;font-size:17px;color:var(--green-bright);
-    letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* ── 浮动卡片 ── */
+.card{
+  position:fixed;
+  width:300px;
+  border-radius:8px;
+  background:var(--panel);
+  border:1px solid var(--border);
+  backdrop-filter:blur(10px);
+  box-shadow:0 20px 60px rgba(0,0,0,0.7), inset 0 0 40px rgba(120,200,80,0.04);
+  z-index:5;
+  transition:border-color .2s, box-shadow .2s;
+  overflow:hidden;
+}
+.card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:.7;
+}
+.card.focused{
+  border-color:var(--border-hi);
+  box-shadow:0 24px 70px rgba(0,0,0,0.8), 0 0 30px rgba(155,227,74,0.18);
+  z-index:6;
+}
+.card.minimized .card-body{display:none;}
 
-  .statusrow{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:0.1em;margin-bottom:14px;}
-  .d{width:8px;height:8px;border-radius:50%;background:var(--faint);flex-shrink:0;}
-  .statusrow.live{color:var(--green-bright);} .statusrow.live .d{background:var(--green-bright);box-shadow:0 0 9px var(--green-bright);animation:bp 1.5s infinite;}
-  .statusrow.dead{color:var(--red);} .statusrow.dead .d{background:var(--red);}
-  .statusrow.checking{color:var(--amber);} .statusrow.checking .d{background:var(--amber);animation:bp 1s infinite;}
-  .statusrow.idle{color:var(--dim);} .statusrow.idle .d{background:var(--dim);}
-  @keyframes bp{0%,100%{opacity:1;}50%{opacity:.35;}}
+/* 标题栏（拖拽手柄） */
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 13px 9px;cursor:grab;gap:8px;
+  border-bottom:1px solid var(--border);
+}
+.card-header:active{cursor:grabbing;}
+.card.minimized .card-header{border-bottom:none;}
 
-  .label{font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:var(--faint);margin-bottom:7px;}
-  .c-url{background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:5px;
-    padding:12px 13px;font-size:14px;color:var(--green-bright);word-break:break-all;line-height:1.45;
-    user-select:all;margin-bottom:13px;text-shadow:0 0 9px rgba(155,227,74,0.25);min-height:46px;display:flex;align-items:center;}
-  .c-url.none{color:var(--dim);font-size:12px;text-shadow:none;}
+.c-name{
+  font-family:'Major Mono Display',monospace;
+  font-size:13px;color:var(--green-bright);
+  letter-spacing:0.03em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;
+}
+.card-btns{display:flex;gap:5px;flex-shrink:0;}
+.cbtn{
+  width:18px;height:18px;border-radius:50%;
+  border:1px solid var(--border);background:transparent;
+  color:var(--dim);font-size:9px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;line-height:1;
+}
+.cbtn:hover{border-color:var(--border-hi);color:var(--green-bright);}
 
-  .c-bot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-  .c-when{font-size:10.5px;color:var(--faint);white-space:nowrap;}
-  .btns{display:flex;gap:8px;}
-  .btn{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;
-    cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);
-    border-radius:6px;padding:8px 12px;transition:all .16s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
-  .btn:hover{border-color:var(--border-hi);color:var(--green-bright);}
-  .btn.primary{color:var(--green);border-color:rgba(150,230,90,0.35);}
-  .btn.primary:hover{background:rgba(150,230,90,0.1);}
-  .btn.copied{color:var(--green-bright);border-color:var(--green-bright);}
+/* 状态行 */
+.statusrow{
+  display:flex;align-items:center;gap:7px;
+  font-size:10px;letter-spacing:0.1em;
+  padding:8px 13px 0;
+}
+.d{width:7px;height:7px;border-radius:50%;background:var(--faint);flex-shrink:0;}
+.statusrow.live{color:var(--green-bright);}
+.statusrow.live .d{background:var(--green-bright);box-shadow:0 0 8px var(--green-bright);animation:bp 1.5s infinite;}
+.statusrow.dead{color:var(--red);} .statusrow.dead .d{background:var(--red);}
+.statusrow.checking{color:var(--amber);} .statusrow.checking .d{background:var(--amber);animation:bp 1s infinite;}
+@keyframes bp{0%,100%{opacity:1;}50%{opacity:.3;}}
 
-  .empty{grid-column:1/-1;text-align:center;border:1px dashed var(--border);border-radius:6px;
-    padding:42px 22px;color:var(--dim);font-size:12.5px;line-height:1.9;background:var(--panel);backdrop-filter:blur(5px);}
-  .empty .big{display:block;font-family:'Major Mono Display',monospace;font-size:17px;color:var(--green-bright);
-    margin-bottom:9px;letter-spacing:0.04em;text-shadow:0 0 16px rgba(155,227,74,0.4);}
+.card-body{padding:10px 13px 13px;}
 
-  .foot{margin-top:26px;text-align:center;font-size:10px;color:var(--faint);letter-spacing:0.18em;text-transform:uppercase;transform:translateZ(30px);}
-  .foot b{color:var(--green);}
+.label{font-size:8px;letter-spacing:0.22em;text-transform:uppercase;color:var(--faint);margin:8px 0 5px;}
+.c-url{
+  background:rgba(0,0,0,0.45);border:1px solid var(--border);border-radius:4px;
+  padding:9px 10px;font-size:11px;color:var(--green-bright);
+  word-break:break-all;line-height:1.4;
+  text-shadow:0 0 8px rgba(155,227,74,0.2);
+  cursor:text;user-select:text;
+  min-height:36px;display:flex;align-items:center;
+}
+.c-url.none{color:var(--dim);font-size:10px;text-shadow:none;}
+
+.c-bot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px;}
+.c-when{font-size:9px;color:var(--faint);white-space:nowrap;}
+.btns{display:flex;gap:6px;}
+.btn{
+  font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.06em;text-transform:uppercase;
+  cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--dim);
+  border-radius:5px;padding:5px 9px;transition:all .15s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.btn:hover{border-color:var(--border-hi);color:var(--green-bright);}
+.btn.primary{color:var(--green);border-color:rgba(150,230,90,0.3);}
+.btn.primary:hover{background:rgba(150,230,90,0.08);}
+.btn.copied{color:var(--green-bright);border-color:var(--green-bright);}
+
+/* 空状态 */
+#empty{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:4;text-align:center;
+  border:1px dashed var(--border);border-radius:8px;
+  padding:48px 36px;background:var(--panel);backdrop-filter:blur(6px);
+  display:none;
+}
+#empty .big{
+  display:block;font-family:'Major Mono Display',monospace;
+  font-size:20px;color:var(--green-bright);margin-bottom:10px;
+  letter-spacing:0.04em;text-shadow:0 0 18px rgba(155,227,74,0.4);
+}
+#empty p{font-size:12px;color:var(--dim);line-height:1.8;}
 </style>
 </head>
 <body>
 <canvas id="matrix"></canvas>
 
-<div class="stage" id="stage">
-  <header>
-    <div class="title">CoinShot</div>
-    <div class="subtitle">machine <b>links</b></div>
-  </header>
-  <div id="list" class="grid">
-    <div class="empty"><span class="big">CONNECTING…</span>正在读取数据</div>
-  </div>
-  <div class="foot">auto-refresh 90s <b>//</b> live-check 15s</div>
+<div id="header">
+  <div class="title">CoinShot</div>
+  <div class="subtitle">machine <b>links</b></div>
 </div>
 
+<div id="empty">
+  <span class="big">STANDBY</span>
+  <p>还没有机器登记<br>启动 main.py 即可</p>
+</div>
+
+<div id="gist-label">GIST · 666a140edb01cd95544c6da155f0af50</div>
+
 <script>
-/* ── 配置：填入你的 Gist ID ── */
-const GIST_ID = "YOUR_GIST_ID_HERE";   // ← 替换成你的 Gist ID
+const GIST_ID = "666a140edb01cd95544c6da155f0af50";
+const STORAGE_KEY = "coinshot_cards_v1";
 
-const listEl = document.getElementById('list');
-const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-
-function fmtAgo(iso){
-  if(!iso) return "—";
-  const t=new Date(iso).getTime(); if(isNaN(t)) return "—";
-  let s=Math.floor((Date.now()-t)/1000); if(s<0) s=0;
-  if(s<60) return s+"s ago";
-  const m=Math.floor(s/60); if(m<60) return m+"m ago";
-  const h=Math.floor(m/60); if(h<24) return h+"h ago";
-  return Math.floor(h/24)+"d ago";
-}
-
-function parseMachines(obj){
-  if(!obj || typeof obj!=="object") return [];
-  return Object.entries(obj)
-    .filter(([k,v])=>v && typeof v==="object" && "url" in v)
-    .map(([k,v])=>({name:k, url:String(v.url||"").replace(/\/$/,""), updated_at:v.updated_at}))
-    .sort((a,b)=>a.name.localeCompare(b.name));
-}
-
-let lastSig="";
-
-async function fetchUrls(){
-  if(!GIST_ID || GIST_ID==="YOUR_GIST_ID_HERE"){
-    listEl.innerHTML='<div class="empty"><span class="big">NOT CONFIGURED</span>请在 index.html 里填入 Gist ID</div>';
-    return;
-  }
-  let obj=null, err="";
-  const t=Date.now();
-
-  // 1) Gist API（直接读，无需认证，public gist）
-  try{
-    const r=await fetch(`https://api.github.com/gists/${GIST_ID}?_=${t}`,{
-      headers:{"Accept":"application/vnd.github+json"},
-      cache:"no-store"
-    });
-    if(r.ok){
-      const j=await r.json();
-      const content=j?.files?.["url.json"]?.content;
-      if(content) obj=JSON.parse(content);
-    } else { err="Gist API HTTP "+r.status; }
-  }catch(e){ err="Gist API "+e.message; }
-
-  // 2) raw.githubusercontent.com 兜底（Gist raw URL）
-  if(!obj){
-    try{
-      const r=await fetch(`https://gist.githubusercontent.com/raw/${GIST_ID}/url.json?t=${t}`,{cache:"no-store"});
-      if(r.ok){ obj=await r.json(); err=""; }
-      else { err+=" · raw HTTP "+r.status; }
-    }catch(e){ err+=" · raw "+e.message; }
-  }
-
-  if(!obj){
-    listEl.innerHTML='<div class="empty"><span class="big">NO SIGNAL</span>读不到数据（'+esc(err)+'）<br>检查 Gist ID 是否正确</div>';
-    return;
-  }
-
-  const ms=parseMachines(obj);
-  if(ms.length===0){
-    listEl.innerHTML='<div class="empty"><span class="big">STANDBY</span>还没有机器登记<br>启动 main.py 即可</div>';
-    return;
-  }
-  const sig=ms.map(m=>m.name+"|"+m.url+"|"+m.updated_at).join(",");
-  if(sig!==lastSig){ lastSig=sig; render(ms); }
-}
-
-function render(ms){
-  listEl.innerHTML="";
-  ms.forEach((m,i)=>{
-    const el=document.createElement("div");
-    el.className="card"; el.style.animationDelay=(i*0.07)+"s";
-    const urlBlock = m.url
-      ? '<div class="c-url">'+esc(m.url)+'</div>'
-      : '<div class="c-url none">URL 未就绪</div>';
-    const botBtns = m.url
-      ? '<div class="btns"><a class="btn" href="'+esc(m.url)+'/status" target="_blank" rel="noopener">&#8599; status</a>'
-        +'<button class="btn primary">&#10697; copy</button></div>'
-      : '';
-    el.innerHTML=
-      '<div class="c-top"><span class="c-name">'+esc(m.name)+'</span></div>'
-      +'<div class="statusrow checking"><span class="d"></span><span class="t">checking…</span></div>'
-      +'<div class="label">tunnel url</div>'
-      + urlBlock
-      +'<div class="c-bot"><span class="c-when">published '+fmtAgo(m.updated_at)+'</span>'+botBtns+'</div>';
-
-    if(m.url){
-      el.querySelector("button")?.addEventListener("click",()=>{
-        navigator.clipboard.writeText(m.url).then(()=>{
-          const b=el.querySelector("button"); b.classList.add("copied"); b.innerHTML="\u2713 copied";
-          setTimeout(()=>{ b.classList.remove("copied"); b.innerHTML="&#10697; copy"; },1400);
-        }).catch(()=>{});
-      });
-    }
-    listEl.appendChild(el);
-    if(m.url) checkMachine(m.url, el.querySelector(".statusrow"));
-  });
-}
-
-async function checkMachine(url, st){
-  setStatus(st,"checking","checking…");
-  try{
-    const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),8000);
-    const r=await fetch(url+"/status",{signal:ctrl.signal,cache:"no-store"}); clearTimeout(to);
-    if(r.ok){
-      const j=await r.json();
-      if(j&&typeof j==="object"&&("ws_connected" in j)){
-        setStatus(st,"live","live · "+(j.total||0).toLocaleString()+" rec");
-      }else setStatus(st,"dead","bad response");
-    }else setStatus(st,"dead","HTTP "+r.status);
-  }catch(e){ setStatus(st,"dead","offline"); }
-}
-
-function setStatus(st,state,text){ st.className="statusrow "+state; st.querySelector(".t").textContent=text; }
-
-function reCheckAll(){
-  document.querySelectorAll(".card").forEach(el=>{
-    const st=el.querySelector(".statusrow"); const u=el.querySelector(".c-url");
-    if(st && u && !u.classList.contains("none")) checkMachine(u.textContent.trim(), st);
-  });
-}
-
-fetchUrls();
-setInterval(fetchUrls, 90000);
-setInterval(reCheckAll, 15000);
-
-/* ── 矩阵雨背景 ── */
+/* ── 矩阵雨（更亮） ── */
 (function(){
   const c=document.getElementById("matrix"), x=c.getContext("2d");
   const glyphs="01ｱｲｳｴｵｶｷｸｹｺ$￥#%&XSHOTCN<>=*+".split("");
-  let cols, drops, fs=15, W, H;
+  let cols,drops,fs=14,W,H;
   function resize(){
-    W=c.width=innerWidth; H=c.height=innerHeight;
-    cols=Math.floor(W/fs); drops=Array(cols).fill(0).map(()=>Math.random()*-40);
+    W=c.width=innerWidth;H=c.height=innerHeight;
+    cols=Math.floor(W/fs);drops=Array(cols).fill(0).map(()=>Math.random()*-60);
   }
-  resize(); addEventListener("resize", resize);
+  resize();addEventListener("resize",resize);
   function draw(){
-    x.fillStyle="rgba(4,7,10,0.09)"; x.fillRect(0,0,W,H);
+    x.fillStyle="rgba(4,7,10,0.055)";x.fillRect(0,0,W,H);
     x.font=fs+"px monospace";
     for(let i=0;i<cols;i++){
       const ch=glyphs[Math.floor(Math.random()*glyphs.length)];
       const y=drops[i]*fs;
-      x.fillStyle = Math.random()<0.025 ? "rgba(198,255,106,0.95)" : "rgba(120,200,70,0.5)";
-      x.fillText(ch, i*fs, y);
-      if(y>H && Math.random()>0.975) drops[i]=0;
+      const r=Math.random();
+      if(r<0.03) x.fillStyle="rgba(220,255,120,1)";
+      else if(r<0.15) x.fillStyle="rgba(155,227,74,0.85)";
+      else x.fillStyle="rgba(100,180,55,0.55)";
+      x.fillText(ch,i*fs,y);
+      if(y>H&&Math.random()>0.97) drops[i]=0;
       drops[i]++;
     }
     requestAnimationFrame(draw);
@@ -259,20 +191,283 @@ setInterval(reCheckAll, 15000);
   draw();
 })();
 
-/* ── 鼠标3D倾斜 ── */
-(function(){
-  const stage=document.getElementById("stage");
+/* ── 本地存储：位置/大小/最小化状态 ── */
+function loadLayout(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}"); }
+  catch(e){ return {}; }
+}
+function saveLayout(layout){ localStorage.setItem(STORAGE_KEY,JSON.stringify(layout)); }
+
+/* ── 全局状态 ── */
+const cards = {};   // name → { el, layout:{x,y,minimized} }
+let layout = loadLayout();
+let topZ = 10;
+
+/* ── 工具 ── */
+const esc = s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function fmtAgo(iso){
+  if(!iso) return "—";
+  const t=new Date(iso).getTime(); if(isNaN(t)) return "—";
+  let s=Math.floor((Date.now()-t)/1000); if(s<0)s=0;
+  if(s<60) return s+"s ago";
+  const m=Math.floor(s/60); if(m<60) return m+"m ago";
+  const h=Math.floor(m/60); if(h<24) return h+"h ago";
+  return Math.floor(h/24)+"d ago";
+}
+
+/* ── 初始随机位置（屏幕中央附近随机偏移） ── */
+function randomPos(index){
+  const cx = innerWidth/2, cy = innerHeight/2;
+  const angle = (index * 137.5) * Math.PI/180;   // 黄金角分布，避免重叠
+  const r = 80 + index * 40;
+  return {
+    x: Math.min(Math.max(cx + Math.cos(angle)*r - 150, 20), innerWidth-320),
+    y: Math.min(Math.max(cy + Math.sin(angle)*r - 80,  80), innerHeight-200),
+    minimized: false
+  };
+}
+
+/* ── 创建卡片 ── */
+function createCard(machine, index){
+  const {name, url, updated_at} = machine;
+  const savedLayout = layout[name] || randomPos(index);
+
+  const el = document.createElement("div");
+  el.className = "card";
+  el.style.left = savedLayout.x + "px";
+  el.style.top  = savedLayout.y + "px";
+  if(savedLayout.minimized) el.classList.add("minimized");
+
+  el.innerHTML = `
+    <div class="card-header">
+      <span class="c-name">${esc(name)}</span>
+      <div class="card-btns">
+        <button class="cbtn min-btn" title="最小化">─</button>
+        <button class="cbtn max-btn" title="还原" style="display:none">□</button>
+      </div>
+    </div>
+    <div class="statusrow checking"><span class="d"></span><span class="t">checking…</span></div>
+    <div class="card-body">
+      <div class="label">tunnel url</div>
+      <div class="c-url ${url?'':'none'}">${url ? esc(url) : 'URL 未就绪'}</div>
+      <div class="c-bot">
+        <span class="c-when">published ${fmtAgo(updated_at)}</span>
+        <div class="btns">
+          ${url ? `<a class="btn" href="${esc(url)}/status" target="_blank">↗ status</a>
+                   <button class="btn primary copy-btn">⊕ copy</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+
+  document.body.appendChild(el);
+
+  // 聚焦到最前
+  function bringToFront(){
+    el.style.zIndex = ++topZ;
+    document.querySelectorAll(".card").forEach(c=>c.classList.remove("focused"));
+    el.classList.add("focused");
+  }
+  el.addEventListener("mousedown", bringToFront);
+  bringToFront();
+
+  // 最小化 / 还原
+  const minBtn = el.querySelector(".min-btn");
+  const maxBtn = el.querySelector(".max-btn");
+  minBtn.addEventListener("click", e=>{
+    e.stopPropagation();
+    el.classList.add("minimized");
+    minBtn.style.display="none"; maxBtn.style.display="flex";
+    saveCardLayout(name, el);
+  });
+  maxBtn.addEventListener("click", e=>{
+    e.stopPropagation();
+    el.classList.remove("minimized");
+    maxBtn.style.display="none"; minBtn.style.display="flex";
+    saveCardLayout(name, el);
+  });
+
+  // 复制按钮
+  el.querySelector(".copy-btn")?.addEventListener("click", e=>{
+    e.stopPropagation();
+    navigator.clipboard.writeText(url).then(()=>{
+      const b=el.querySelector(".copy-btn");
+      b.classList.add("copied"); b.innerHTML="✓ copied";
+      setTimeout(()=>{ b.classList.remove("copied"); b.innerHTML="⊕ copy"; },1400);
+    }).catch(()=>{});
+  });
+
+  // 拖拽
+  makeDraggable(el, el.querySelector(".card-header"), name);
+
+  // 3D 鼠标效果
+  make3D(el);
+
+  cards[name] = { el, url, updated_at };
+  saveCardLayout(name, el);
+
+  // 探针
+  if(url) checkMachine(url, el.querySelector(".statusrow"));
+
+  return el;
+}
+
+/* ── 更新已有卡片数据 ── */
+function updateCard(machine){
+  const {name, url, updated_at} = machine;
+  const card = cards[name];
+  if(!card) return;
+  const el = card.el;
+
+  // 更新 URL 显示
+  const urlEl = el.querySelector(".c-url");
+  if(urlEl){
+    urlEl.className = "c-url" + (url?'':' none');
+    urlEl.textContent = url ? url : 'URL 未就绪';
+  }
+  // 更新时间
+  const whenEl = el.querySelector(".c-when");
+  if(whenEl) whenEl.textContent = "published " + fmtAgo(updated_at);
+
+  card.url = url; card.updated_at = updated_at;
+  if(url) checkMachine(url, el.querySelector(".statusrow"));
+}
+
+/* ── 保存布局 ── */
+function saveCardLayout(name, el){
+  layout[name] = {
+    x: parseInt(el.style.left)||0,
+    y: parseInt(el.style.top)||0,
+    minimized: el.classList.contains("minimized")
+  };
+  saveLayout(layout);
+}
+
+/* ── 拖拽 ── */
+function makeDraggable(el, handle, name){
+  let ox,oy,dragging=false;
+  handle.addEventListener("mousedown", e=>{
+    if(e.target.classList.contains("cbtn")) return;
+    dragging=true;
+    ox=e.clientX-parseInt(el.style.left||0);
+    oy=e.clientY-parseInt(el.style.top||0);
+    e.preventDefault();
+  });
+  document.addEventListener("mousemove", e=>{
+    if(!dragging) return;
+    const x=Math.max(0,Math.min(innerWidth-el.offsetWidth, e.clientX-ox));
+    const y=Math.max(0,Math.min(innerHeight-el.offsetHeight, e.clientY-oy));
+    el.style.left=x+"px"; el.style.top=y+"px";
+  });
+  document.addEventListener("mouseup", ()=>{
+    if(dragging){ dragging=false; saveCardLayout(name,el); }
+  });
+}
+
+/* ── 独立3D效果（每张卡片响应鼠标与自身距离） ── */
+function make3D(el){
   let tx=0,ty=0,cx=0,cy=0;
-  addEventListener("mousemove",e=>{
-    tx=(innerWidth/2 - e.clientX)/45;
-    ty=(e.clientY - innerHeight/2)/45;
-  },{passive:true});
-  (function loop(){
-    cx+=(tx-cx)*0.08; cy+=(ty-cy)*0.08;
-    stage.style.transform="rotateY("+cx.toFixed(2)+"deg) rotateX("+cy.toFixed(2)+"deg)";
+  function loop(){
+    cx+=(tx-cx)*0.1; cy+=(ty-cy)*0.1;
+    el.style.transform=`perspective(800px) rotateY(${cx.toFixed(2)}deg) rotateX(${cy.toFixed(2)}deg)`;
     requestAnimationFrame(loop);
-  })();
-})();
+  }
+  loop();
+  document.addEventListener("mousemove", e=>{
+    const rect=el.getBoundingClientRect();
+    const ecx=rect.left+rect.width/2, ecy=rect.top+rect.height/2;
+    const dx=e.clientX-ecx, dy=e.clientY-ecy;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const maxDist=400, strength=12;
+    const factor=Math.max(0, 1-dist/maxDist);
+    tx = (dx/maxDist)*strength*factor;
+    ty = -(dy/maxDist)*strength*factor;
+  },{passive:true});
+}
+
+/* ── 探针 ── */
+async function checkMachine(url, st){
+  setStatus(st,"checking","checking…");
+  try{
+    const ctrl=new AbortController();
+    const to=setTimeout(()=>ctrl.abort(),8000);
+    const r=await fetch(url+"/status",{signal:ctrl.signal,cache:"no-store"});
+    clearTimeout(to);
+    if(r.ok){
+      const j=await r.json();
+      if(j&&"ws_connected" in j) setStatus(st,"live","live · "+(j.total||0).toLocaleString()+" rec");
+      else setStatus(st,"dead","bad response");
+    } else setStatus(st,"dead","HTTP "+r.status);
+  }catch(e){ setStatus(st,"dead","offline"); }
+}
+function setStatus(st,state,text){
+  st.className="statusrow "+state;
+  st.querySelector(".t").textContent=text;
+}
+
+/* ── 数据拉取 ── */
+function parseMachines(obj){
+  if(!obj||typeof obj!=="object") return [];
+  return Object.entries(obj)
+    .filter(([k,v])=>v&&typeof v==="object"&&"url" in v)
+    .map(([k,v])=>({name:k, url:String(v.url||"").replace(/\/$/,""), updated_at:v.updated_at}))
+    .sort((a,b)=>a.name.localeCompare(b.name));
+}
+
+async function fetchUrls(){
+  let obj=null;
+  const t=Date.now();
+  try{
+    const r=await fetch(`https://api.github.com/gists/${GIST_ID}?_=${t}`,{
+      headers:{"Accept":"application/vnd.github+json"},cache:"no-store"
+    });
+    if(r.ok){
+      const j=await r.json();
+      const content=j?.files?.["url.json"]?.content;
+      if(content) obj=JSON.parse(content);
+    }
+  }catch(e){}
+
+  if(!obj){
+    try{
+      const r=await fetch(`https://gist.githubusercontent.com/raw/${GIST_ID}/url.json?t=${t}`,{cache:"no-store"});
+      if(r.ok) obj=await r.json();
+    }catch(e){}
+  }
+
+  if(!obj) return;
+
+  const machines=parseMachines(obj);
+  const emptyEl=document.getElementById("empty");
+
+  // 移除消失的机器
+  Object.keys(cards).forEach(name=>{
+    if(!machines.find(m=>m.name===name)){
+      cards[name].el.remove();
+      delete cards[name];
+      delete layout[name];
+      saveLayout(layout);
+    }
+  });
+
+  // 新增 or 更新
+  machines.forEach((m,i)=>{
+    if(cards[m.name]) updateCard(m);
+    else createCard(m, i);
+  });
+
+  emptyEl.style.display = machines.length===0 ? "block" : "none";
+}
+
+/* ── 定时重新探针所有在线卡片 ── */
+function reCheckAll(){
+  Object.values(cards).forEach(({el,url})=>{
+    if(url) checkMachine(url, el.querySelector(".statusrow"));
+  });
+}
+
+fetchUrls();
+setInterval(fetchUrls, 90000);
+setInterval(reCheckAll, 15000);
 </script>
 </body>
 </html>
