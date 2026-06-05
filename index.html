@@ -20,6 +20,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 #header{
   position:fixed;top:28px;left:50%;transform:translateX(-50%);
   z-index:10;text-align:center;pointer-events:none;
+  transform-style:preserve-3d;
+  transition:transform .1s ease-out;
+  will-change:transform;
 }
 .title{
   font-family:'Major Mono Display',monospace;
@@ -41,7 +44,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
 /* ── 浮动卡片 ── */
 .card{
   position:fixed;
-  width:300px;
+  width:520px;
   border-radius:8px;
   background:var(--panel);
   border:1px solid var(--border);
@@ -367,8 +370,8 @@ function makeDraggable(el, handle, name){
 function make3D(el){
   let tx=0,ty=0,cx=0,cy=0;
   function loop(){
-    cx+=(tx-cx)*0.1; cy+=(ty-cy)*0.1;
-    el.style.transform=`perspective(800px) rotateY(${cx.toFixed(2)}deg) rotateX(${cy.toFixed(2)}deg)`;
+    cx+=(tx-cx)*0.15; cy+=(ty-cy)*0.15;
+    el.style.transform=`perspective(500px) rotateY(${cx.toFixed(2)}deg) rotateX(${cy.toFixed(2)}deg)`;
     requestAnimationFrame(loop);
   }
   loop();
@@ -377,10 +380,10 @@ function make3D(el){
     const ecx=rect.left+rect.width/2, ecy=rect.top+rect.height/2;
     const dx=e.clientX-ecx, dy=e.clientY-ecy;
     const dist=Math.sqrt(dx*dx+dy*dy);
-    const maxDist=400, strength=12;
+    const maxDist=350, strength=22;
     const factor=Math.max(0, 1-dist/maxDist);
-    tx = (dx/maxDist)*strength*factor;
-    ty = -(dy/maxDist)*strength*factor;
+    tx = (dx/maxDist)*strength*factor*2;
+    ty = -(dy/maxDist)*strength*factor*2;
   },{passive:true});
 }
 
@@ -468,6 +471,21 @@ function reCheckAll(){
 fetchUrls();
 setInterval(fetchUrls, 90000);
 setInterval(reCheckAll, 15000);
+
+/* ── 标题3D效果（跟随鼠标，幅度较小） ── */
+(function(){
+  const header=document.getElementById("header");
+  let tx=0,ty=0,cx=0,cy=0;
+  document.addEventListener("mousemove",e=>{
+    tx=(e.clientX-innerWidth/2)/innerWidth*18;
+    ty=-(e.clientY-innerHeight/2)/innerHeight*10;
+  },{passive:true});
+  (function loop(){
+    cx+=(tx-cx)*0.06; cy+=(ty-cy)*0.06;
+    header.style.transform=`translateX(-50%) perspective(600px) rotateY(${cx.toFixed(2)}deg) rotateX(${cy.toFixed(2)}deg)`;
+    requestAnimationFrame(loop);
+  })();
+})();
 </script>
 </body>
 </html>
