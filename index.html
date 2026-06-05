@@ -45,11 +45,11 @@
 
   .card{
     position:relative;z-index:2;
-    width:100%;max-width:540px;
+    width:100%;max-width:760px;
     background:var(--panel);
     border:1px solid var(--border);
-    border-radius:4px;
-    padding:30px 28px 26px;
+    border-radius:6px;
+    padding:46px 48px 40px;
     backdrop-filter:blur(7px);
     box-shadow:0 0 0 1px rgba(0,0,0,0.4), 0 24px 60px rgba(0,0,0,0.55), inset 0 0 60px rgba(143,209,79,0.03);
     animation:cardIn 0.7s cubic-bezier(.2,.8,.2,1);
@@ -60,15 +60,15 @@
   .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
   .brand{
     font-family:'Major Mono Display',monospace;
-    font-size:20px;letter-spacing:0.06em;color:var(--green-bright);
+    font-size:28px;letter-spacing:0.06em;color:var(--green-bright);
     text-shadow:0 0 14px rgba(182,255,90,0.35);
   }
-  .corner{font-size:9px;color:var(--green-dim);letter-spacing:0.18em;}
-  .subtitle{font-size:10px;letter-spacing:0.26em;color:var(--green-dim);text-transform:uppercase;margin-bottom:22px;}
+  .corner{font-size:11px;color:var(--green-dim);letter-spacing:0.18em;}
+  .subtitle{font-size:12px;letter-spacing:0.26em;color:var(--green-dim);text-transform:uppercase;margin-bottom:30px;}
 
   /* 状态灯 */
-  .statusrow{display:flex;align-items:center;gap:9px;margin-bottom:18px;font-size:11px;letter-spacing:0.12em;}
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--green-dim);flex-shrink:0;}
+  .statusrow{display:flex;align-items:center;gap:11px;margin-bottom:24px;font-size:14px;letter-spacing:0.12em;}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--green-dim);flex-shrink:0;}
   .dot.live{background:var(--green-bright);box-shadow:0 0 10px var(--green-bright);animation:pulse 1.6s ease-in-out infinite;}
   .dot.dead{background:var(--red);box-shadow:0 0 10px var(--red);}
   .dot.checking{background:var(--amber);box-shadow:0 0 10px var(--amber);animation:pulse 1s ease-in-out infinite;}
@@ -76,35 +76,35 @@
   #statusText{color:var(--text);}
 
   /* URL 显示框 */
-  .label{font-size:9px;letter-spacing:0.24em;color:var(--green-dim);text-transform:uppercase;margin-bottom:8px;}
+  .label{font-size:11px;letter-spacing:0.24em;color:var(--green-dim);text-transform:uppercase;margin-bottom:10px;}
   .urlbox{
     position:relative;
     background:rgba(0,0,0,0.4);
     border:1px solid var(--border);
     border-radius:3px;
-    padding:15px 16px;
-    margin-bottom:14px;
-    min-height:54px;
+    padding:22px 22px;
+    margin-bottom:18px;
+    min-height:72px;
     display:flex;align-items:center;
     word-break:break-all;
     transition:border-color 0.3s;
   }
   .urlbox:hover{border-color:var(--green-dim);}
   #urlText{
-    font-size:15px;color:var(--green-bright);line-height:1.5;
+    font-size:21px;color:var(--green-bright);line-height:1.5;
     text-shadow:0 0 10px rgba(182,255,90,0.25);
     user-select:all;
   }
-  #urlText.placeholder{color:var(--green-dim);font-size:13px;text-shadow:none;}
+  #urlText.placeholder{color:var(--green-dim);font-size:16px;text-shadow:none;}
 
-  .actions{display:flex;gap:10px;margin-bottom:20px;}
+  .actions{display:flex;gap:12px;margin-bottom:26px;}
   .btn{
     flex:1;
-    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.12em;
+    font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.12em;
     text-transform:uppercase;cursor:pointer;
     background:transparent;color:var(--green);
     border:1px solid var(--border);border-radius:3px;
-    padding:11px 10px;transition:all 0.18s;text-decoration:none;text-align:center;
+    padding:15px 12px;transition:all 0.18s;text-decoration:none;text-align:center;
     display:inline-flex;align-items:center;justify-content:center;gap:6px;
   }
   .btn:hover{background:rgba(143,209,79,0.1);border-color:var(--green);color:var(--green-bright);}
@@ -114,11 +114,11 @@
 
   /* 底部元信息 */
   .meta{
-    border-top:1px solid var(--border);padding-top:14px;
-    display:flex;justify-content:space-between;font-size:10px;color:var(--green-dim);letter-spacing:0.06em;
+    border-top:1px solid var(--border);padding-top:18px;
+    display:flex;justify-content:space-between;font-size:12px;color:var(--green-dim);letter-spacing:0.06em;
   }
   .meta b{color:var(--text);font-weight:500;}
-  .footer{margin-top:14px;text-align:center;font-size:9px;color:var(--green-dim);letter-spacing:0.14em;}
+  .footer{margin-top:16px;text-align:center;font-size:11px;color:var(--green-dim);letter-spacing:0.14em;}
   .blink{animation:blink 1.2s step-end infinite;}
   @keyframes blink{50%{opacity:0;}}
 </style>
@@ -145,7 +145,7 @@
 
   <div class="actions">
     <button class="btn" id="copyBtn" onclick="copyUrl()">⧉ copy url</button>
-    <a class="btn ghost" id="openBtn" href="#" target="_blank" rel="noopener">↗ open</a>
+    <a class="btn ghost" id="openBtn" href="#" target="_blank" rel="noopener">↗ open /status</a>
   </div>
 
   <div class="meta">
@@ -192,7 +192,7 @@ async function fetchUrl(){
     if(currentUrl){
       $("urlText").textContent = currentUrl;
       $("urlText").classList.remove("placeholder");
-      $("openBtn").href = currentUrl;
+      $("openBtn").href = currentUrl + "/status";
     }else{
       $("urlText").textContent = "no url published yet";
       $("urlText").classList.add("placeholder");
@@ -201,9 +201,9 @@ async function fetchUrl(){
     // 拿到 URL 后立即探活
     if(currentUrl) checkAlive();
   }catch(e){
-    $("urlText").textContent = "cannot read url.json — check repo / file";
+    $("urlText").textContent = "url.json 还没发布 — 检查数据机的 GitHub 环境变量";
     $("urlText").classList.add("placeholder");
-    setStatus("dead", "config error");
+    setStatus("dead", "waiting for data machine to publish");
   }
 }
 
