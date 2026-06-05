@@ -23,12 +23,10 @@
     perspective:1400px;
   }
   #matrix{position:fixed;inset:0;z-index:0;opacity:0.42;}
-  body::after{ /* 中心暗角聚焦 */
+  body::after{
     content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
     background:radial-gradient(ellipse at 50% 45%, transparent 30%, rgba(4,7,10,0.82) 85%);
   }
-
-  /* 鼠标驱动 3D 的容器 */
   .stage{position:relative;z-index:2;width:100%;max-width:760px;transform-style:preserve-3d;
     transition:transform .12s ease-out;will-change:transform;}
 
@@ -56,10 +54,6 @@
   .c-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px;}
   .c-name{font-family:'Major Mono Display',monospace;font-size:17px;color:var(--green-bright);
     letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .role{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;padding:3px 8px;border-radius:4px;
-    border:1px solid var(--border);color:var(--dim);flex-shrink:0;}
-  .role.t{color:var(--green-bright);border-color:rgba(150,230,90,0.4);background:rgba(150,230,90,0.08);}
-  .role.r{color:#7ad0ff;border-color:rgba(122,208,255,0.35);background:rgba(122,208,255,0.07);}
 
   .statusrow{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:0.1em;margin-bottom:14px;}
   .d{width:8px;height:8px;border-radius:50%;background:var(--faint);flex-shrink:0;}
@@ -101,31 +95,17 @@
 <div class="stage" id="stage">
   <header>
     <div class="title">CoinShot</div>
-    <div class="subtitle">data machine <b>links</b></div>
+    <div class="subtitle">machine <b>links</b></div>
   </header>
   <div id="list" class="grid">
-    <div class="empty"><span class="big">CONNECTING…</span>正在读取 url.json</div>
+    <div class="empty"><span class="big">CONNECTING…</span>正在读取数据</div>
   </div>
   <div class="foot">auto-refresh 90s <b>//</b> live-check 15s</div>
 </div>
 
 <script>
-/* 仓库定位：优先从本页 GitHub Pages 网址自动推导，失败用备用值 */
-let GH_USER = "Eriackk";
-let GH_REPO = "Cloudflare_URL";
-const GH_BRANCH = "main";
-(function(){
-  const m = location.hostname.match(/^([^.]+)\.github\.io$/i);
-  const seg = location.pathname.split('/').filter(Boolean);
-  if(m && seg.length >= 1){ GH_USER = m[1]; GH_REPO = seg[0]; }
-})();
-/* 稳定性：三个数据源，按"最新优先"排序
-   1) 同源 Pages 文件（无限流，每次发布后随构建刷新）
-   2) GitHub API + 缓存绕过参数（即时、绕过 60s 边缘缓存，但每小时限 60 次）
-   3) raw（缓存 5 分钟，最后兜底） */
-const SAMEORIGIN_URL = "url.json";  // 相对路径（被 Pages 服务时同源，无 CORS/限流）
-const API_BASE = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/url.json?ref=${GH_BRANCH}`;
-const RAW_BASE = `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/${GH_BRANCH}/url.json`;
+/* ── 配置：填入你的 Gist ID ── */
+const GIST_ID = "YOUR_GIST_ID_HERE";   // ← 替换成你的 Gist ID
 
 const listEl = document.getElementById('list');
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -139,50 +119,58 @@ function fmtAgo(iso){
   const h=Math.floor(m/60); if(h<24) return h+"h ago";
   return Math.floor(h/24)+"d ago";
 }
+
 function parseMachines(obj){
   if(!obj || typeof obj!=="object") return [];
-  if(typeof obj.url==="string"){
-    return [{name:"data-machine",url:String(obj.url).replace(/\/$/,""),role:"T",updated_at:obj.updated_at}];
-  }
   return Object.entries(obj)
-    .filter(([k,v])=>v&&typeof v==="object"&&("url" in v||"role" in v))
-    .map(([k,v])=>({name:k,url:String(v.url||"").replace(/\/$/,""),role:(v.role||"T").toUpperCase(),updated_at:v.updated_at}))
-    .sort((a,b)=>{ if(a.role!==b.role) return a.role==="T"?-1:1; return a.name.localeCompare(b.name); });
+    .filter(([k,v])=>v && typeof v==="object" && "url" in v)
+    .map(([k,v])=>({name:k, url:String(v.url||"").replace(/\/$/,""), updated_at:v.updated_at}))
+    .sort((a,b)=>a.name.localeCompare(b.name));
 }
 
 let lastSig="";
+
 async function fetchUrls(){
+  if(!GIST_ID || GIST_ID==="YOUR_GIST_ID_HERE"){
+    listEl.innerHTML='<div class="empty"><span class="big">NOT CONFIGURED</span>请在 index.html 里填入 Gist ID</div>';
+    return;
+  }
   let obj=null, err="";
   const t=Date.now();
-  // 1) 同源 Pages
+
+  // 1) Gist API（直接读，无需认证，public gist）
   try{
-    const r=await fetch(SAMEORIGIN_URL+"?t="+t,{cache:"no-store"});
-    if(r.ok) obj=await r.json();
-  }catch(e){}
-  // 2) API（缓存绕过）
+    const r=await fetch(`https://api.github.com/gists/${GIST_ID}?_=${t}`,{
+      headers:{"Accept":"application/vnd.github+json"},
+      cache:"no-store"
+    });
+    if(r.ok){
+      const j=await r.json();
+      const content=j?.files?.["url.json"]?.content;
+      if(content) obj=JSON.parse(content);
+    } else { err="Gist API HTTP "+r.status; }
+  }catch(e){ err="Gist API "+e.message; }
+
+  // 2) raw.githubusercontent.com 兜底（Gist raw URL）
   if(!obj){
     try{
-      const r=await fetch(API_BASE+"&_="+t,{headers:{"Accept":"application/vnd.github.raw+json"},cache:"no-store"});
-      if(r.ok) obj=await r.json(); else err="API HTTP "+r.status;
-    }catch(e){ err="API "+e.message; }
-  }
-  // 3) raw
-  if(!obj){
-    try{
-      const r=await fetch(RAW_BASE+"?t="+t,{cache:"no-store"});
-      if(r.ok){ obj=await r.json(); err=""; } else err+=" · raw HTTP "+r.status;
+      const r=await fetch(`https://gist.githubusercontent.com/raw/${GIST_ID}/url.json?t=${t}`,{cache:"no-store"});
+      if(r.ok){ obj=await r.json(); err=""; }
+      else { err+=" · raw HTTP "+r.status; }
     }catch(e){ err+=" · raw "+e.message; }
   }
+
   if(!obj){
-    listEl.innerHTML='<div class="empty"><span class="big">NO SIGNAL</span>读不到 url.json（'+esc(err)+'）<br>检查仓库名 / 分支 / 是否在发布</div>';
+    listEl.innerHTML='<div class="empty"><span class="big">NO SIGNAL</span>读不到数据（'+esc(err)+'）<br>检查 Gist ID 是否正确</div>';
     return;
   }
+
   const ms=parseMachines(obj);
   if(ms.length===0){
-    listEl.innerHTML='<div class="empty"><span class="big">STANDBY</span>还没有机器登记<br>在机器上运行 main.py 即可</div>';
+    listEl.innerHTML='<div class="empty"><span class="big">STANDBY</span>还没有机器登记<br>启动 main.py 即可</div>';
     return;
   }
-  const sig=ms.map(m=>m.name+"|"+m.url+"|"+m.role+"|"+m.updated_at).join(",");
+  const sig=ms.map(m=>m.name+"|"+m.url+"|"+m.updated_at).join(",");
   if(sig!==lastSig){ lastSig=sig; render(ms); }
 }
 
@@ -191,31 +179,22 @@ function render(ms){
   ms.forEach((m,i)=>{
     const el=document.createElement("div");
     el.className="card"; el.style.animationDelay=(i*0.07)+"s";
-    const isT=m.role==="T", roleLabel=isT?"数据机 · T":"交易机 · R", roleCls=isT?"t":"r";
-    let urlBlock, botBtns, statusInit;
-    if(isT && m.url){
-      urlBlock='<div class="c-url">'+esc(m.url)+'</div>';
-      botBtns='<div class="btns"><a class="btn" href="'+esc(m.url)+'/status" target="_blank" rel="noopener">&#8599; status</a>'
-             +'<button class="btn primary">&#10697; copy</button></div>';
-      statusInit='<div class="statusrow checking"><span class="d"></span><span class="t">checking…</span></div>';
-    }else{
-      // 交易机（无公网地址）：用最近登记时间判断在线（15 分钟内=在线）
-      urlBlock='<div class="c-url none">本机为交易端，无公网地址</div>';
-      botBtns='';
-      const t=m.updated_at?new Date(m.updated_at).getTime():0;
-      const fresh = t && (Date.now()-t < 15*60*1000);
-      statusInit = fresh
-        ? '<div class="statusrow live"><span class="d"></span><span class="t">online</span></div>'
-        : '<div class="statusrow idle"><span class="d"></span><span class="t">offline · last seen</span></div>';
-    }
+    const urlBlock = m.url
+      ? '<div class="c-url">'+esc(m.url)+'</div>'
+      : '<div class="c-url none">URL 未就绪</div>';
+    const botBtns = m.url
+      ? '<div class="btns"><a class="btn" href="'+esc(m.url)+'/status" target="_blank" rel="noopener">&#8599; status</a>'
+        +'<button class="btn primary">&#10697; copy</button></div>'
+      : '';
     el.innerHTML=
-      '<div class="c-top"><span class="c-name">'+esc(m.name)+'</span><span class="role '+roleCls+'">'+roleLabel+'</span></div>'
-      + statusInit
-      + '<div class="label">'+(isT?'tunnel url':'endpoint')+'</div>'
+      '<div class="c-top"><span class="c-name">'+esc(m.name)+'</span></div>'
+      +'<div class="statusrow checking"><span class="d"></span><span class="t">checking…</span></div>'
+      +'<div class="label">tunnel url</div>'
       + urlBlock
-      + '<div class="c-bot"><span class="c-when">'+(isT?'published ':'registered ')+fmtAgo(m.updated_at)+'</span>'+botBtns+'</div>';
-    if(isT && m.url){
-      el.querySelector("button").addEventListener("click",()=>{
+      +'<div class="c-bot"><span class="c-when">published '+fmtAgo(m.updated_at)+'</span>'+botBtns+'</div>';
+
+    if(m.url){
+      el.querySelector("button")?.addEventListener("click",()=>{
         navigator.clipboard.writeText(m.url).then(()=>{
           const b=el.querySelector("button"); b.classList.add("copied"); b.innerHTML="\u2713 copied";
           setTimeout(()=>{ b.classList.remove("copied"); b.innerHTML="&#10697; copy"; },1400);
@@ -223,7 +202,7 @@ function render(ms){
       });
     }
     listEl.appendChild(el);
-    if(isT && m.url) checkMachine(m.url, el.querySelector(".statusrow"));
+    if(m.url) checkMachine(m.url, el.querySelector(".statusrow"));
   });
 }
 
@@ -240,18 +219,21 @@ async function checkMachine(url, st){
     }else setStatus(st,"dead","HTTP "+r.status);
   }catch(e){ setStatus(st,"dead","offline"); }
 }
+
 function setStatus(st,state,text){ st.className="statusrow "+state; st.querySelector(".t").textContent=text; }
+
 function reCheckAll(){
   document.querySelectorAll(".card").forEach(el=>{
     const st=el.querySelector(".statusrow"); const u=el.querySelector(".c-url");
     if(st && u && !u.classList.contains("none")) checkMachine(u.textContent.trim(), st);
   });
 }
+
 fetchUrls();
-setInterval(fetchUrls, 90000);   // 90s：API 每小时 40 次，不触发限流
+setInterval(fetchUrls, 90000);
 setInterval(reCheckAll, 15000);
 
-/* ── 数据流矩阵雨背景（最初那种）── */
+/* ── 矩阵雨背景 ── */
 (function(){
   const c=document.getElementById("matrix"), x=c.getContext("2d");
   const glyphs="01ｱｲｳｴｵｶｷｸｹｺ$￥#%&XSHOTCN<>=*+".split("");
@@ -277,13 +259,13 @@ setInterval(reCheckAll, 15000);
   draw();
 })();
 
-/* ── 鼠标移动 → 容器 3D 倾斜（借用参考的那种视觉感）── */
+/* ── 鼠标3D倾斜 ── */
 (function(){
   const stage=document.getElementById("stage");
   let tx=0,ty=0,cx=0,cy=0;
   addEventListener("mousemove",e=>{
-    tx=(innerWidth/2 - e.clientX)/45;   // 左右 → rotateY
-    ty=(e.clientY - innerHeight/2)/45;  // 上下 → rotateX
+    tx=(innerWidth/2 - e.clientX)/45;
+    ty=(e.clientY - innerHeight/2)/45;
   },{passive:true});
   (function loop(){
     cx+=(tx-cx)*0.08; cy+=(ty-cy)*0.08;
