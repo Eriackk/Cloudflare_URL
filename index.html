@@ -158,13 +158,18 @@
 
 <script>
 /* ════════════════════════════════════════════════
-   配置：把下面的 GH_USER / GH_REPO 改成你的仓库
-   （必须和数据机 main.py 里的 COINSHOT_GH_REPO 完全一致）
-   url.json 由数据机自动写入这个仓库根目录
+   仓库定位：优先自动从本页的 GitHub Pages 网址推导
+   （部署在 {user}.github.io/{repo}/ 时自动生效，无需手改）。
+   推导失败时用下面写死的备用值。
    ════════════════════════════════════════════════ */
-const GH_USER = "Eriackk";
-const GH_REPO = "coinshot-tunnel";
+let GH_USER = "Eriackk";          // 备用（推导失败时用）
+let GH_REPO = "Cloudflare_URL";   // 备用
 const GH_BRANCH = "main";
+(function autodetectRepo(){
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/i);
+  const seg = location.pathname.split('/').filter(Boolean);
+  if(m && seg.length >= 1){ GH_USER = m[1]; GH_REPO = seg[0]; }
+})();
 // 主源：GitHub API（即时内容，不像 raw 那样缓存 5 分钟）
 const API_URL = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/url.json?ref=${GH_BRANCH}`;
 // 备用源：raw（API 限流或失败时退回）
