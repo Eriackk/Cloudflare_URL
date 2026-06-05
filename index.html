@@ -6,85 +6,148 @@
 <title>CoinShot · Data Links</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0b0d11; --card:#13171e; --card-hi:#171c25;
-    --line:rgba(255,255,255,0.07); --line-hi:rgba(120,255,190,0.28);
-    --txt:#e7ecf2; --txt-dim:#7b8694; --txt-faint:#566070;
-    --accent:#46e0a0; --accent-soft:rgba(70,224,160,0.12);
-    --red:#ff5d6c; --amber:#ffc24b;
+    --cyan:#00f3ff; --magenta:#ff2bd6; --purple:#9d4edd;
+    --dark:#070612; --panel:rgba(18,16,38,0.55);
+    --line:rgba(0,243,255,0.18); --txt:#cfe9ff; --dim:#6f7da0; --faint:#47527a;
+    --red:#ff4d6d; --amber:#ffc24b;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;}
   body{
-    background:var(--bg); color:var(--txt);
-    font-family:'IBM Plex Mono',ui-monospace,monospace;
-    min-height:100vh; display:flex; align-items:center; justify-content:center;
-    padding:24px; position:relative; overflow-x:hidden;
-  }
-  body::before{
-    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
     background:
-      radial-gradient(900px 500px at 50% -10%, rgba(70,224,160,0.10), transparent 60%),
-      radial-gradient(700px 600px at 90% 110%, rgba(70,160,224,0.06), transparent 55%);
+      radial-gradient(900px 600px at 12% 8%, rgba(0,243,255,0.10), transparent 45%),
+      radial-gradient(900px 700px at 88% 95%, rgba(157,78,221,0.18), transparent 45%),
+      radial-gradient(600px 500px at 60% 50%, rgba(255,43,214,0.06), transparent 55%),
+      linear-gradient(160deg,#070612 0%,#0b0a23 55%,#0a0716 100%);
+    color:var(--txt); font-family:'Share Tech Mono',monospace;
+    min-height:100vh; position:relative; overflow-x:hidden;
+    display:flex; flex-direction:column; align-items:center;
+    padding:48px 22px 32px;
   }
-  body::after{
+  /* 网格底纹 */
+  body::before{
     content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.5;
-    background-image:radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
-    background-size:26px 26px;
-    -webkit-mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
-            mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
+    background:
+      repeating-linear-gradient(0deg, rgba(0,243,255,0.035) 0 1px, transparent 1px 46px),
+      repeating-linear-gradient(90deg, rgba(0,243,255,0.035) 0 1px, transparent 1px 46px);
+    -webkit-mask-image:radial-gradient(circle at 50% 30%, #000, transparent 80%);
+            mask-image:radial-gradient(circle at 50% 30%, #000, transparent 80%);
   }
-  .panel{position:relative;z-index:1;width:100%;max-width:560px;}
-  .top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;}
-  .logo{font-family:'Sora',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em;color:var(--txt);}
-  .logo b{color:var(--accent);}
-  .tag{font-size:10px;letter-spacing:0.22em;color:var(--txt-faint);text-transform:uppercase;}
-  .sub{font-size:11px;color:var(--txt-dim);margin-bottom:20px;letter-spacing:0.02em;}
-  #list{display:flex;flex-direction:column;gap:12px;}
-  .machine{
-    background:linear-gradient(180deg,var(--card-hi),var(--card));
-    border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;
-    transition:border-color .25s;animation:rise .5s cubic-bezier(.2,.8,.2,1) both;
+  #stars{position:fixed;inset:0;z-index:0;}
+
+  .wrap{position:relative;z-index:2;width:100%;max-width:1080px;}
+
+  /* 顶部 HUD 角标 */
+  .hud{
+    position:fixed;top:18px;left:18px;z-index:3;
+    display:flex;align-items:center;gap:9px;
+    font-size:10px;letter-spacing:0.18em;color:var(--dim);text-transform:uppercase;
+    border:1px solid var(--line);border-radius:8px;padding:8px 12px;
+    background:var(--panel);backdrop-filter:blur(8px);
   }
-  .machine:hover{border-color:var(--line-hi);}
-  @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
-  .m-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
-  .m-name{font-family:'Sora',sans-serif;font-weight:600;font-size:15px;color:var(--txt);display:flex;align-items:center;gap:8px;}
-  .m-name .ico{width:7px;height:7px;border-radius:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);}
-  .pill{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);color:var(--txt-dim);}
-  .pill .d{width:6px;height:6px;border-radius:50%;background:var(--txt-faint);}
-  .pill.live{color:var(--accent);border-color:rgba(70,224,160,0.4);background:var(--accent-soft);}
-  .pill.live .d{background:var(--accent);box-shadow:0 0 7px var(--accent);animation:bp 1.6s ease-in-out infinite;}
-  .pill.dead{color:var(--red);border-color:rgba(255,93,108,0.35);}
-  .pill.dead .d{background:var(--red);}
-  .pill.checking .d{background:var(--amber);animation:bp 1s ease-in-out infinite;}
-  @keyframes bp{0%,100%{opacity:1;}50%{opacity:.3;}}
-  .m-url{background:rgba(0,0,0,0.34);border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:13.5px;color:var(--accent);word-break:break-all;line-height:1.45;user-select:all;margin-bottom:11px;}
-  .m-meta{display:flex;align-items:center;justify-content:space-between;}
-  .m-when{font-size:10.5px;color:var(--txt-faint);letter-spacing:0.03em;}
-  .m-btns{display:flex;gap:8px;}
-  .b{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.04em;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--txt-dim);border-radius:7px;padding:7px 11px;transition:all .16s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
-  .b:hover{border-color:var(--line-hi);color:var(--txt);background:rgba(255,255,255,0.03);}
-  .b.primary{color:var(--accent);border-color:rgba(70,224,160,0.3);}
-  .b.primary:hover{background:var(--accent-soft);}
-  .b.copied{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);}
-  .empty{border:1px dashed var(--line);border-radius:12px;padding:26px 18px;text-align:center;color:var(--txt-dim);font-size:12.5px;line-height:1.7;}
-  .empty .big{color:var(--txt);font-family:'Sora',sans-serif;font-weight:600;font-size:14px;margin-bottom:6px;display:block;}
-  .foot{margin-top:18px;text-align:center;font-size:10px;color:var(--txt-faint);letter-spacing:0.1em;}
-  .foot .dot{color:var(--accent);}
+  .hud .led{width:9px;height:9px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.55;transform:scale(1.15);}}
+
+  header{text-align:center;margin-bottom:42px;}
+  .title{
+    font-family:'Orbitron',sans-serif;font-weight:900;
+    font-size:clamp(40px,8vw,76px);line-height:1;letter-spacing:0.04em;
+    background:linear-gradient(92deg,var(--cyan),var(--magenta) 55%,var(--purple));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 26px rgba(0,243,255,0.45));
+    text-transform:uppercase;
+  }
+  .subtitle{
+    margin-top:14px;font-size:13px;letter-spacing:0.42em;text-transform:uppercase;color:var(--dim);
+  }
+  .subtitle b{color:var(--cyan);}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;}
+
+  .card{
+    position:relative;border-radius:18px;padding:24px 22px 20px;
+    background:linear-gradient(180deg, rgba(20,18,46,0.82), rgba(11,10,28,0.82));
+    border:1px solid rgba(0,243,255,0.16);
+    box-shadow:0 18px 50px rgba(0,0,0,0.5), inset 0 0 40px rgba(0,243,255,0.03);
+    transition:transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s;
+    animation:rise .55s cubic-bezier(.2,.8,.2,1) both;overflow:hidden;
+  }
+  .card::before{ /* 顶部霓虹条 */
+    content:"";position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--cyan),var(--magenta),transparent);
+    opacity:.7;
+  }
+  .card:hover{transform:translateY(-6px);border-color:rgba(0,243,255,0.5);
+    box-shadow:0 26px 60px rgba(0,0,0,0.6), 0 0 34px rgba(0,243,255,0.25);}
+  @keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+  .c-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px;}
+  .c-name{
+    font-family:'Orbitron',sans-serif;font-weight:700;font-size:17px;letter-spacing:0.04em;
+    color:#fff;text-shadow:0 0 14px rgba(0,243,255,0.35);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .status{
+    flex-shrink:0;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;
+    display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
+    border:1px solid var(--line);color:var(--dim);
+  }
+  .status .d{width:7px;height:7px;border-radius:50%;background:var(--faint);}
+  .status.live{color:var(--cyan);border-color:rgba(0,243,255,0.5);background:rgba(0,243,255,0.08);text-shadow:0 0 8px rgba(0,243,255,0.5);}
+  .status.live .d{background:var(--cyan);box-shadow:0 0 9px var(--cyan);animation:pulse 1.5s infinite;}
+  .status.dead{color:var(--red);border-color:rgba(255,77,109,0.45);}
+  .status.dead .d{background:var(--red);box-shadow:0 0 8px var(--red);}
+  .status.checking{color:var(--amber);border-color:rgba(255,194,75,0.4);}
+  .status.checking .d{background:var(--amber);animation:pulse 1s infinite;}
+
+  .c-url{
+    background:rgba(0,0,0,0.42);border:1px solid var(--line);border-radius:11px;
+    padding:14px 14px;font-size:14px;color:var(--cyan);word-break:break-all;line-height:1.5;
+    user-select:all;margin-bottom:16px;text-shadow:0 0 10px rgba(0,243,255,0.3);
+  }
+  .c-bot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .c-when{font-size:11px;color:var(--faint);letter-spacing:0.04em;white-space:nowrap;}
+  .btns{display:flex;gap:8px;}
+  .btn{
+    font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;
+    cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--dim);
+    border-radius:9px;padding:9px 13px;transition:all .16s;text-decoration:none;
+    display:inline-flex;align-items:center;gap:5px;
+  }
+  .btn:hover{border-color:rgba(0,243,255,0.6);color:var(--cyan);box-shadow:0 0 14px rgba(0,243,255,0.2);}
+  .btn.primary{color:var(--cyan);border-color:rgba(0,243,255,0.4);}
+  .btn.primary:hover{background:rgba(0,243,255,0.1);}
+  .btn.copied{color:var(--magenta);border-color:var(--magenta);box-shadow:0 0 14px rgba(255,43,214,0.35);}
+
+  .empty{
+    grid-column:1/-1;text-align:center;border:1px dashed var(--line);border-radius:18px;
+    padding:48px 24px;color:var(--dim);font-size:13px;line-height:1.9;
+    background:var(--panel);backdrop-filter:blur(6px);
+  }
+  .empty .big{display:block;font-family:'Orbitron',sans-serif;font-weight:700;font-size:18px;
+    color:var(--cyan);margin-bottom:10px;letter-spacing:0.06em;text-shadow:0 0 16px rgba(0,243,255,0.4);}
+
+  .foot{margin-top:36px;text-align:center;font-size:10px;color:var(--faint);letter-spacing:0.2em;text-transform:uppercase;}
+  .foot b{color:var(--magenta);}
 </style>
 </head>
 <body>
-<div class="panel">
-  <div class="top">
-    <div class="logo">Coin<b>Shot</b></div>
-    <div class="tag">data links</div>
+<canvas id="stars"></canvas>
+
+<div class="hud"><span class="led"></span><span id="hudText">system online</span></div>
+
+<div class="wrap">
+  <header>
+    <h1 class="title">CoinShot</h1>
+    <div class="subtitle">data machine <b>links</b></div>
+  </header>
+  <div id="list" class="grid">
+    <div class="empty"><span class="big">CONNECTING…</span>正在读取 url.json</div>
   </div>
-  <div class="sub">远程数据机的实时公网地址 · 自动刷新</div>
-  <div id="list"><div class="empty"><span class="big">连接中…</span>正在读取 url.json</div></div>
-  <div class="foot">auto-refresh 60s <span class="dot">&#9679;</span> live-check 15s</div>
+  <div class="foot">auto-refresh 60s <b>//</b> live-check 15s</div>
 </div>
 
 <script>
@@ -99,21 +162,20 @@ const GH_BRANCH = "main";
 })();
 const API_URL = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/url.json?ref=${GH_BRANCH}`;
 const RAW_URL = `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/${GH_BRANCH}/url.json`;
+document.getElementById("hudText").textContent = GH_REPO;
 
 const listEl = document.getElementById('list');
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 function fmtAgo(iso){
   if(!iso) return "—";
-  const t = new Date(iso).getTime();
-  if(isNaN(t)) return "—";
+  const t = new Date(iso).getTime(); if(isNaN(t)) return "—";
   let s = Math.floor((Date.now()-t)/1000); if(s<0) s=0;
   if(s<60) return s+"s ago";
   const m=Math.floor(s/60); if(m<60) return m+"m ago";
   const h=Math.floor(m/60); if(h<24) return h+"h ago";
   return Math.floor(h/24)+"d ago";
 }
-
 function parseMachines(obj){
   if(!obj || typeof obj!=="object") return [];
   if(typeof obj.url === "string"){
@@ -139,12 +201,12 @@ async function fetchUrls(){
     }catch(e){ err += " · raw "+e.message; }
   }
   if(!obj){
-    listEl.innerHTML = '<div class="empty"><span class="big">读不到 url.json</span>'+esc(err)+'<br>检查仓库名 / 分支 / 数据机是否在发布</div>';
+    listEl.innerHTML = '<div class="empty"><span class="big">NO SIGNAL</span>读不到 url.json（'+esc(err)+'）<br>检查仓库名 / 分支 / 数据机是否在发布</div>';
     return;
   }
   const machines = parseMachines(obj);
   if(machines.length===0){
-    listEl.innerHTML = '<div class="empty"><span class="big">还没有数据机发布</span>在数据机上运行 main.py（选数据机 T）即可</div>';
+    listEl.innerHTML = '<div class="empty"><span class="big">STANDBY</span>还没有数据机发布<br>在数据机上运行 main.py（选数据机 T）即可</div>';
     return;
   }
   const sig = machines.map(m=>m.name+"|"+m.url+"|"+m.updated_at).join(",");
@@ -155,28 +217,27 @@ function renderMachines(machines){
   listEl.innerHTML = "";
   machines.forEach((m, i)=>{
     const el = document.createElement("div");
-    el.className = "machine"; el.style.animationDelay = (i*0.06)+"s";
+    el.className = "card"; el.style.animationDelay = (i*0.07)+"s";
     el.innerHTML =
-      '<div class="m-top"><div class="m-name"><span class="ico"></span>'+esc(m.name)+'</div>'
-      + '<div class="pill checking"><span class="d"></span><span class="t">checking</span></div></div>'
-      + '<div class="m-url">'+esc(m.url)+'</div>'
-      + '<div class="m-meta"><span class="m-when">published '+fmtAgo(m.updated_at)+'</span>'
-      + '<div class="m-btns">'
-      + '<a class="b" href="'+esc(m.url)+'/status" target="_blank" rel="noopener">&#8599; /status</a>'
-      + '<button class="b primary">&#10697; copy</button></div></div>';
+      '<div class="c-top"><span class="c-name">'+esc(m.name)+'</span>'
+      + '<span class="status checking"><span class="d"></span><span class="t">checking</span></span></div>'
+      + '<div class="c-url">'+esc(m.url)+'</div>'
+      + '<div class="c-bot"><span class="c-when">published '+fmtAgo(m.updated_at)+'</span>'
+      + '<div class="btns">'
+      + '<a class="btn" href="'+esc(m.url)+'/status" target="_blank" rel="noopener">&#8599; status</a>'
+      + '<button class="btn primary">&#10697; copy</button></div></div>';
     el.querySelector("button").addEventListener("click", ()=>{
       navigator.clipboard.writeText(m.url).then(()=>{
-        const b=el.querySelector("button"); b.classList.add("copied"); b.textContent="\u2713 copied";
+        const b=el.querySelector("button"); b.classList.add("copied"); b.innerHTML="\u2713 copied";
         setTimeout(()=>{ b.classList.remove("copied"); b.innerHTML="&#10697; copy"; },1400);
       }).catch(()=>{});
     });
     listEl.appendChild(el);
-    checkMachine(m.url, el.querySelector(".pill"));
+    checkMachine(m.url, el.querySelector(".status"));
   });
 }
-
-async function checkMachine(url, pill){
-  setPill(pill, "checking", "checking");
+async function checkMachine(url, st){
+  setStatus(st,"checking","checking");
   try{
     const ctrl = new AbortController();
     const to = setTimeout(()=>ctrl.abort(), 8000);
@@ -186,21 +247,58 @@ async function checkMachine(url, pill){
       const j = await r.json();
       if(j && typeof j==="object" && ("ws_connected" in j)){
         const total = (j.total||0).toLocaleString();
-        setPill(pill, "live", "live \u00b7 "+total+" rec");
-      }else setPill(pill, "dead", "bad response");
-    }else setPill(pill, "dead", "HTTP "+r.status);
-  }catch(e){ setPill(pill, "dead", "offline"); }
+        setStatus(st,"live","live · "+total);
+      }else setStatus(st,"dead","bad resp");
+    }else setStatus(st,"dead","http "+r.status);
+  }catch(e){ setStatus(st,"dead","offline"); }
 }
-function setPill(pill, state, text){ pill.className="pill "+state; pill.querySelector(".t").textContent=text; }
+function setStatus(st, state, text){ st.className="status "+state; st.querySelector(".t").textContent=text; }
 function reCheckAll(){
-  document.querySelectorAll(".machine").forEach(el=>{
-    const url = el.querySelector(".m-url").textContent.trim();
-    checkMachine(url, el.querySelector(".pill"));
+  document.querySelectorAll(".card").forEach(el=>{
+    const url = el.querySelector(".c-url").textContent.trim();
+    checkMachine(url, el.querySelector(".status"));
   });
 }
 fetchUrls();
 setInterval(fetchUrls, 60000);
 setInterval(reCheckAll, 15000);
+
+/* ── 轻量粒子背景（青/品红/紫漂浮光点 + 近邻连线）── */
+(function(){
+  const c=document.getElementById("stars"), x=c.getContext("2d");
+  const cols=["rgba(0,243,255,0.8)","rgba(255,43,214,0.7)","rgba(157,78,221,0.7)"];
+  let ps=[], W,H, N;
+  function resize(){
+    W=c.width=innerWidth; H=c.height=innerHeight;
+    N=Math.min(80, Math.floor(W*H/22000));
+    ps=Array.from({length:N},()=>({
+      x:Math.random()*W, y:Math.random()*H,
+      vx:(Math.random()-0.5)*0.45, vy:(Math.random()-0.5)*0.45,
+      r:Math.random()*1.8+0.6, c:cols[Math.floor(Math.random()*cols.length)]
+    }));
+  }
+  resize(); addEventListener("resize", resize);
+  function draw(){
+    x.clearRect(0,0,W,H);
+    for(let i=0;i<ps.length;i++){
+      const p=ps[i];
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>W) p.vx*=-1;
+      if(p.y<0||p.y>H) p.vy*=-1;
+      x.beginPath(); x.fillStyle=p.c; x.shadowBlur=8; x.shadowColor=p.c;
+      x.arc(p.x,p.y,p.r,0,Math.PI*2); x.fill(); x.shadowBlur=0;
+      for(let j=i+1;j<ps.length;j++){
+        const q=ps[j], dx=p.x-q.x, dy=p.y-q.y, d=dx*dx+dy*dy;
+        if(d<13000){
+          x.strokeStyle="rgba(0,243,255,"+(0.12*(1-d/13000))+")";
+          x.lineWidth=0.6; x.beginPath(); x.moveTo(p.x,p.y); x.lineTo(q.x,q.y); x.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
 </script>
 </body>
 </html>
