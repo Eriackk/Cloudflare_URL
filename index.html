@@ -3,314 +3,204 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CoinShot · Data Machine Link</title>
+<title>CoinShot · Data Links</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Major+Mono+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#070a07;
-    --panel:rgba(12,18,12,0.72);
-    --green:#8fd14f;
-    --green-bright:#b6ff5a;
-    --green-dim:rgba(143,209,79,0.42);
-    --amber:#ffb43e;
-    --red:#ff5252;
-    --text:rgba(198,224,170,0.9);
-    --border:rgba(143,209,79,0.22);
+    --bg:#0b0d11; --card:#13171e; --card-hi:#171c25;
+    --line:rgba(255,255,255,0.07); --line-hi:rgba(120,255,190,0.28);
+    --txt:#e7ecf2; --txt-dim:#7b8694; --txt-faint:#566070;
+    --accent:#46e0a0; --accent-soft:rgba(70,224,160,0.12);
+    --red:#ff5d6c; --amber:#ffc24b;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;}
   body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:'IBM Plex Mono',monospace;
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-    position:relative;
-    padding:20px;
+    background:var(--bg); color:var(--txt);
+    font-family:'IBM Plex Mono',ui-monospace,monospace;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:24px; position:relative; overflow-x:hidden;
   }
-  /* 矩阵雨背景 */
-  #matrix{position:fixed;inset:0;z-index:0;opacity:0.13;}
-  /* 暗角 + 扫描线氛围 */
-  body::after{
-    content:"";position:fixed;inset:0;z-index:1;pointer-events:none;
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
     background:
-      radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%),
-      repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0) 4px);
+      radial-gradient(900px 500px at 50% -10%, rgba(70,224,160,0.10), transparent 60%),
+      radial-gradient(700px 600px at 90% 110%, rgba(70,160,224,0.06), transparent 55%);
   }
-
-  .card{
-    position:relative;z-index:2;
-    width:100%;max-width:760px;
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:6px;
-    padding:46px 48px 40px;
-    backdrop-filter:blur(7px);
-    box-shadow:0 0 0 1px rgba(0,0,0,0.4), 0 24px 60px rgba(0,0,0,0.55), inset 0 0 60px rgba(143,209,79,0.03);
-    animation:cardIn 0.7s cubic-bezier(.2,.8,.2,1);
+  body::after{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.5;
+    background-image:radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size:26px 26px;
+    -webkit-mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
+            mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
   }
-  @keyframes cardIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
-
-  /* 顶部标题行 */
-  .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
-  .brand{
-    font-family:'Major Mono Display',monospace;
-    font-size:28px;letter-spacing:0.06em;color:var(--green-bright);
-    text-shadow:0 0 14px rgba(182,255,90,0.35);
+  .panel{position:relative;z-index:1;width:100%;max-width:560px;}
+  .top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;}
+  .logo{font-family:'Sora',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.01em;color:var(--txt);}
+  .logo b{color:var(--accent);}
+  .tag{font-size:10px;letter-spacing:0.22em;color:var(--txt-faint);text-transform:uppercase;}
+  .sub{font-size:11px;color:var(--txt-dim);margin-bottom:20px;letter-spacing:0.02em;}
+  #list{display:flex;flex-direction:column;gap:12px;}
+  .machine{
+    background:linear-gradient(180deg,var(--card-hi),var(--card));
+    border:1px solid var(--line);border-radius:12px;padding:16px 16px 14px;
+    transition:border-color .25s;animation:rise .5s cubic-bezier(.2,.8,.2,1) both;
   }
-  .corner{font-size:11px;color:var(--green-dim);letter-spacing:0.18em;}
-  .subtitle{font-size:12px;letter-spacing:0.26em;color:var(--green-dim);text-transform:uppercase;margin-bottom:30px;}
-
-  /* 状态灯 */
-  .statusrow{display:flex;align-items:center;gap:11px;margin-bottom:24px;font-size:14px;letter-spacing:0.12em;}
-  .dot{width:11px;height:11px;border-radius:50%;background:var(--green-dim);flex-shrink:0;}
-  .dot.live{background:var(--green-bright);box-shadow:0 0 10px var(--green-bright);animation:pulse 1.6s ease-in-out infinite;}
-  .dot.dead{background:var(--red);box-shadow:0 0 10px var(--red);}
-  .dot.checking{background:var(--amber);box-shadow:0 0 10px var(--amber);animation:pulse 1s ease-in-out infinite;}
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
-  #statusText{color:var(--text);}
-
-  /* URL 显示框 */
-  .label{font-size:11px;letter-spacing:0.24em;color:var(--green-dim);text-transform:uppercase;margin-bottom:10px;}
-  .urlbox{
-    position:relative;
-    background:rgba(0,0,0,0.4);
-    border:1px solid var(--border);
-    border-radius:3px;
-    padding:22px 22px;
-    margin-bottom:18px;
-    min-height:72px;
-    display:flex;align-items:center;
-    word-break:break-all;
-    transition:border-color 0.3s;
-  }
-  .urlbox:hover{border-color:var(--green-dim);}
-  #urlText{
-    font-size:21px;color:var(--green-bright);line-height:1.5;
-    text-shadow:0 0 10px rgba(182,255,90,0.25);
-    user-select:all;
-  }
-  #urlText.placeholder{color:var(--green-dim);font-size:16px;text-shadow:none;}
-
-  .actions{display:flex;gap:12px;margin-bottom:26px;}
-  .btn{
-    flex:1;
-    font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.12em;
-    text-transform:uppercase;cursor:pointer;
-    background:transparent;color:var(--green);
-    border:1px solid var(--border);border-radius:3px;
-    padding:15px 12px;transition:all 0.18s;text-decoration:none;text-align:center;
-    display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  }
-  .btn:hover{background:rgba(143,209,79,0.1);border-color:var(--green);color:var(--green-bright);}
-  .btn:active{transform:translateY(1px);}
-  .btn.ghost{color:var(--green-dim);}
-  .btn.copied{background:rgba(143,209,79,0.18);color:var(--green-bright);border-color:var(--green);}
-
-  /* 底部元信息 */
-  .meta{
-    border-top:1px solid var(--border);padding-top:18px;
-    display:flex;justify-content:space-between;font-size:12px;color:var(--green-dim);letter-spacing:0.06em;
-  }
-  .meta b{color:var(--text);font-weight:500;}
-  .footer{margin-top:16px;text-align:center;font-size:11px;color:var(--green-dim);letter-spacing:0.14em;}
-  .blink{animation:blink 1.2s step-end infinite;}
-  @keyframes blink{50%{opacity:0;}}
+  .machine:hover{border-color:var(--line-hi);}
+  @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .m-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
+  .m-name{font-family:'Sora',sans-serif;font-weight:600;font-size:15px;color:var(--txt);display:flex;align-items:center;gap:8px;}
+  .m-name .ico{width:7px;height:7px;border-radius:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);}
+  .pill{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);color:var(--txt-dim);}
+  .pill .d{width:6px;height:6px;border-radius:50%;background:var(--txt-faint);}
+  .pill.live{color:var(--accent);border-color:rgba(70,224,160,0.4);background:var(--accent-soft);}
+  .pill.live .d{background:var(--accent);box-shadow:0 0 7px var(--accent);animation:bp 1.6s ease-in-out infinite;}
+  .pill.dead{color:var(--red);border-color:rgba(255,93,108,0.35);}
+  .pill.dead .d{background:var(--red);}
+  .pill.checking .d{background:var(--amber);animation:bp 1s ease-in-out infinite;}
+  @keyframes bp{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .m-url{background:rgba(0,0,0,0.34);border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-size:13.5px;color:var(--accent);word-break:break-all;line-height:1.45;user-select:all;margin-bottom:11px;}
+  .m-meta{display:flex;align-items:center;justify-content:space-between;}
+  .m-when{font-size:10.5px;color:var(--txt-faint);letter-spacing:0.03em;}
+  .m-btns{display:flex;gap:8px;}
+  .b{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.04em;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--txt-dim);border-radius:7px;padding:7px 11px;transition:all .16s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+  .b:hover{border-color:var(--line-hi);color:var(--txt);background:rgba(255,255,255,0.03);}
+  .b.primary{color:var(--accent);border-color:rgba(70,224,160,0.3);}
+  .b.primary:hover{background:var(--accent-soft);}
+  .b.copied{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);}
+  .empty{border:1px dashed var(--line);border-radius:12px;padding:26px 18px;text-align:center;color:var(--txt-dim);font-size:12.5px;line-height:1.7;}
+  .empty .big{color:var(--txt);font-family:'Sora',sans-serif;font-weight:600;font-size:14px;margin-bottom:6px;display:block;}
+  .foot{margin-top:18px;text-align:center;font-size:10px;color:var(--txt-faint);letter-spacing:0.1em;}
+  .foot .dot{color:var(--accent);}
 </style>
 </head>
 <body>
-<canvas id="matrix"></canvas>
-
-<div class="card">
-  <div class="head">
-    <div class="brand">coinshot</div>
-    <div class="corner">DATA LINK</div>
+<div class="panel">
+  <div class="top">
+    <div class="logo">Coin<b>Shot</b></div>
+    <div class="tag">data links</div>
   </div>
-  <div class="subtitle">data machine · live endpoint</div>
-
-  <div class="statusrow">
-    <span class="dot checking" id="dot"></span>
-    <span id="statusText">checking link…</span>
-  </div>
-
-  <div class="label">current tunnel url</div>
-  <div class="urlbox">
-    <span id="urlText" class="placeholder">loading…</span>
-  </div>
-
-  <div class="actions">
-    <button class="btn" id="copyBtn" onclick="copyUrl()">⧉ copy url</button>
-    <a class="btn ghost" id="openBtn" href="#" target="_blank" rel="noopener">↗ open /status</a>
-  </div>
-
-  <div class="meta">
-    <span>published <b id="updatedAt">—</b></span>
-    <span>checked <b id="checkedAt">—</b></span>
-  </div>
-
-  <div class="footer">auto-refresh every 60s · <span class="blink">_</span></div>
+  <div class="sub">远程数据机的实时公网地址 · 自动刷新</div>
+  <div id="list"><div class="empty"><span class="big">连接中…</span>正在读取 url.json</div></div>
+  <div class="foot">auto-refresh 60s <span class="dot">&#9679;</span> live-check 15s</div>
 </div>
 
 <script>
-/* ════════════════════════════════════════════════
-   仓库定位：优先自动从本页的 GitHub Pages 网址推导
-   （部署在 {user}.github.io/{repo}/ 时自动生效，无需手改）。
-   推导失败时用下面写死的备用值。
-   ════════════════════════════════════════════════ */
-let GH_USER = "Eriackk";          // 备用（推导失败时用）
-let GH_REPO = "Cloudflare_URL";   // 备用
+/* 仓库定位：优先从本页 GitHub Pages 网址自动推导，失败用备用值 */
+let GH_USER = "Eriackk";
+let GH_REPO = "Cloudflare_URL";
 const GH_BRANCH = "main";
-(function autodetectRepo(){
+(function(){
   const m = location.hostname.match(/^([^.]+)\.github\.io$/i);
   const seg = location.pathname.split('/').filter(Boolean);
   if(m && seg.length >= 1){ GH_USER = m[1]; GH_REPO = seg[0]; }
 })();
-// 主源：GitHub API（即时内容，不像 raw 那样缓存 5 分钟）
 const API_URL = `https://api.github.com/repos/${GH_USER}/${GH_REPO}/contents/url.json?ref=${GH_BRANCH}`;
-// 备用源：raw（API 限流或失败时退回）
 const RAW_URL = `https://raw.githubusercontent.com/${GH_USER}/${GH_REPO}/${GH_BRANCH}/url.json`;
 
-let currentUrl = "";
-
-const $ = id => document.getElementById(id);
+const listEl = document.getElementById('list');
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 function fmtAgo(iso){
   if(!iso) return "—";
   const t = new Date(iso).getTime();
   if(isNaN(t)) return "—";
-  const s = Math.floor((Date.now()-t)/1000);
+  let s = Math.floor((Date.now()-t)/1000); if(s<0) s=0;
   if(s<60) return s+"s ago";
   const m=Math.floor(s/60); if(m<60) return m+"m ago";
   const h=Math.floor(m/60); if(h<24) return h+"h ago";
   return Math.floor(h/24)+"d ago";
 }
 
-// 1) 读取 url.json：先试 GitHub API（即时），失败再试 raw（备用）
-async function fetchUrl(){
-  let obj = null, err = "";
-  // ── 主源：GitHub API ──
-  try{
-    const r = await fetch(API_URL, {
-      headers: {"Accept": "application/vnd.github.raw+json"},
-      cache: "no-store"
-    });
-    if(r.ok){
-      // 用了 raw media type，直接拿到文件内容
-      obj = await r.json();
-    }else{
-      err = "API HTTP " + r.status;
-    }
-  }catch(e){ err = "API " + e.message; }
-
-  // ── 备用源：raw（API 失败/限流时）──
-  if(!obj){
-    try{
-      const r2 = await fetch(RAW_URL + "?t=" + Date.now(), {cache:"no-store"});
-      if(r2.ok){ obj = await r2.json(); err = ""; }
-      else { err = err + " · raw HTTP " + r2.status; }
-    }catch(e){ err = err + " · raw " + e.message; }
+function parseMachines(obj){
+  if(!obj || typeof obj!=="object") return [];
+  if(typeof obj.url === "string"){
+    return [{name:"data-machine", url:String(obj.url).replace(/\/$/,""), updated_at:obj.updated_at}];
   }
-
-  if(obj){
-    currentUrl = (obj.url||"").replace(/\/$/,"");
-    if(currentUrl){
-      $("urlText").textContent = currentUrl;
-      $("urlText").classList.remove("placeholder");
-      $("openBtn").href = currentUrl + "/status";
-      $("updatedAt").textContent = fmtAgo(obj.updated_at);
-      checkAlive();
-    }else{
-      $("urlText").textContent = "url.json 里没有 url 字段";
-      $("urlText").classList.add("placeholder");
-      setStatus("dead", "bad url.json");
-    }
-  }else{
-    // 两个源都失败 → 显示具体错误码，方便排查
-    $("urlText").textContent = "读不到 url.json（" + err + "）";
-    $("urlText").classList.add("placeholder");
-    setStatus("dead", "url.json not found · 检查仓库名/分支");
-  }
+  return Object.entries(obj)
+    .filter(([k,v]) => v && typeof v==="object" && v.url)
+    .map(([k,v]) => ({name:k, url:String(v.url).replace(/\/$/,""), updated_at:v.updated_at}))
+    .sort((a,b)=>a.name.localeCompare(b.name));
 }
 
-// 2) 探活：用和数据机探针一致的方式 fetch /status 验证真能取到数据
-async function checkAlive(){
-  if(!currentUrl){ setStatus("dead","no url"); return; }
-  setStatus("checking","checking link…");
+let lastSig = "";
+async function fetchUrls(){
+  let obj=null, err="";
+  try{
+    const r = await fetch(API_URL, {headers:{"Accept":"application/vnd.github.raw+json"}, cache:"no-store"});
+    if(r.ok) obj = await r.json(); else err = "API HTTP "+r.status;
+  }catch(e){ err = "API "+e.message; }
+  if(!obj){
+    try{
+      const r2 = await fetch(RAW_URL+"?t="+Date.now(), {cache:"no-store"});
+      if(r2.ok){ obj = await r2.json(); err=""; } else err += " · raw HTTP "+r2.status;
+    }catch(e){ err += " · raw "+e.message; }
+  }
+  if(!obj){
+    listEl.innerHTML = '<div class="empty"><span class="big">读不到 url.json</span>'+esc(err)+'<br>检查仓库名 / 分支 / 数据机是否在发布</div>';
+    return;
+  }
+  const machines = parseMachines(obj);
+  if(machines.length===0){
+    listEl.innerHTML = '<div class="empty"><span class="big">还没有数据机发布</span>在数据机上运行 main.py（选数据机 T）即可</div>';
+    return;
+  }
+  const sig = machines.map(m=>m.name+"|"+m.url+"|"+m.updated_at).join(",");
+  if(sig !== lastSig){ lastSig = sig; renderMachines(machines); }
+}
+
+function renderMachines(machines){
+  listEl.innerHTML = "";
+  machines.forEach((m, i)=>{
+    const el = document.createElement("div");
+    el.className = "machine"; el.style.animationDelay = (i*0.06)+"s";
+    el.innerHTML =
+      '<div class="m-top"><div class="m-name"><span class="ico"></span>'+esc(m.name)+'</div>'
+      + '<div class="pill checking"><span class="d"></span><span class="t">checking</span></div></div>'
+      + '<div class="m-url">'+esc(m.url)+'</div>'
+      + '<div class="m-meta"><span class="m-when">published '+fmtAgo(m.updated_at)+'</span>'
+      + '<div class="m-btns">'
+      + '<a class="b" href="'+esc(m.url)+'/status" target="_blank" rel="noopener">&#8599; /status</a>'
+      + '<button class="b primary">&#10697; copy</button></div></div>';
+    el.querySelector("button").addEventListener("click", ()=>{
+      navigator.clipboard.writeText(m.url).then(()=>{
+        const b=el.querySelector("button"); b.classList.add("copied"); b.textContent="\u2713 copied";
+        setTimeout(()=>{ b.classList.remove("copied"); b.innerHTML="&#10697; copy"; },1400);
+      }).catch(()=>{});
+    });
+    listEl.appendChild(el);
+    checkMachine(m.url, el.querySelector(".pill"));
+  });
+}
+
+async function checkMachine(url, pill){
+  setPill(pill, "checking", "checking");
   try{
     const ctrl = new AbortController();
     const to = setTimeout(()=>ctrl.abort(), 8000);
-    const r = await fetch(currentUrl + "/status", {signal:ctrl.signal, cache:"no-store"});
+    const r = await fetch(url+"/status", {signal:ctrl.signal, cache:"no-store"});
     clearTimeout(to);
     if(r.ok){
       const j = await r.json();
       if(j && typeof j==="object" && ("ws_connected" in j)){
-        const ws = j.ws_connected ? "WS on" : "WS off";
         const total = (j.total||0).toLocaleString();
-        setStatus("live", `online · ${ws} · ${total} rec`);
-      }else{
-        setStatus("dead","reachable but bad response");
-      }
-    }else{
-      setStatus("dead","unreachable ("+r.status+")");
-    }
-  }catch(e){
-    setStatus("dead","offline / tunnel down");
-  }
-  $("checkedAt").textContent = "just now";
+        setPill(pill, "live", "live \u00b7 "+total+" rec");
+      }else setPill(pill, "dead", "bad response");
+    }else setPill(pill, "dead", "HTTP "+r.status);
+  }catch(e){ setPill(pill, "dead", "offline"); }
 }
-
-function setStatus(state, text){
-  const dot = $("dot");
-  dot.className = "dot " + state;
-  $("statusText").textContent = text;
-}
-
-function copyUrl(){
-  if(!currentUrl) return;
-  navigator.clipboard.writeText(currentUrl).then(()=>{
-    const b=$("copyBtn"); b.classList.add("copied"); b.textContent="✓ copied";
-    setTimeout(()=>{ b.classList.remove("copied"); b.textContent="⧉ copy url"; }, 1500);
-  }).catch(()=>{
-    // 退化方案：选中文本供手动复制
-    const range=document.createRange(); range.selectNode($("urlText"));
-    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+function setPill(pill, state, text){ pill.className="pill "+state; pill.querySelector(".t").textContent=text; }
+function reCheckAll(){
+  document.querySelectorAll(".machine").forEach(el=>{
+    const url = el.querySelector(".m-url").textContent.trim();
+    checkMachine(url, el.querySelector(".pill"));
   });
 }
-
-// 初次加载 + 每 60s 刷新（API 未登录限 60 次/小时，60s 间隔最安全）
-fetchUrl();
-setInterval(fetchUrl, 60000);
-// 探活比 URL 刷新更频繁一点（每 15s）
-setInterval(checkAlive, 15000);
-
-/* ── 矩阵雨背景 ── */
-(function(){
-  const c=document.getElementById("matrix"), x=c.getContext("2d");
-  let cols, drops, fs=14;
-  const chars="01ｱｲｳｴｵｶｷｸｹｺ$￥BTCETHSOLXRP".split("");
-  function resize(){
-    c.width=innerWidth; c.height=innerHeight;
-    cols=Math.floor(c.width/fs);
-    drops=Array(cols).fill(0).map(()=>Math.random()*-50);
-  }
-  resize(); addEventListener("resize", resize);
-  function draw(){
-    x.fillStyle="rgba(7,10,7,0.08)"; x.fillRect(0,0,c.width,c.height);
-    x.fillStyle="#8fd14f"; x.font=fs+"px monospace";
-    for(let i=0;i<cols;i++){
-      const ch=chars[Math.floor(Math.random()*chars.length)];
-      x.fillText(ch, i*fs, drops[i]*fs);
-      if(drops[i]*fs>c.height && Math.random()>0.975) drops[i]=0;
-      drops[i]++;
-    }
-  }
-  setInterval(draw, 60);
-})();
+fetchUrls();
+setInterval(fetchUrls, 60000);
+setInterval(reCheckAll, 15000);
 </script>
 </body>
 </html>
